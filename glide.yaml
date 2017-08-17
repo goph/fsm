@@ -1,0 +1,8 @@
+package: github.com/goph/fsm
+import: []
+testImport:
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert
+  - require
+  - mock
