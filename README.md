@@ -6,6 +6,8 @@
 
 **Final state machine implementation.**
 
+See the [examples](examples/) directory for detailed usage examples.
+
 
 ## Development
 

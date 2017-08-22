@@ -1,0 +1,21 @@
+language: go
+
+sudo: false
+
+go:
+    - 1.7.x
+    - 1.8.x
+    - tip
+
+matrix:
+    allow_failures:
+        - go: tip
+
+before_install:
+    - mkdir -p $HOME/bin
+    - curl -sL http://get.binhq.io/gitbin | DEST=$HOME/bin bash
+    - gitbin get Masterminds/glide 0.12.3 -o $HOME/bin
+
+install: make dep
+
+script: make check
