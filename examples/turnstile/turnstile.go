@@ -45,25 +45,25 @@ func NewStateMachine() *fsm.StateMachine {
 			"nopass": &noPassAction{},
 		}),
 		[]fsm.Transition{
-			fsm.Transition{
+			{
 				FromState: Locked,
 				Event:     "coin_inserted",
 				ToState:   Unlocked,
 				Action:    "coin",
 			},
-			fsm.Transition{
+			{
 				FromState: Unlocked,
 				Event:     "coin_inserted",
 				ToState:   Unlocked,
 				Action:    "coin",
 			},
-			fsm.Transition{
+			{
 				FromState: Unlocked,
 				Event:     "pushed",
 				ToState:   Locked,
 				Action:    "pass",
 			},
-			fsm.Transition{
+			{
 				FromState: Locked,
 				Event:     "pushed",
 				ToState:   Locked,

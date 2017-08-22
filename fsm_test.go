@@ -10,7 +10,7 @@ import (
 func TestStateMachine_DelegateInvoked(t *testing.T) {
 	delegate := new(mocks.Delegate)
 	transitions := []fsm.Transition{
-		fsm.Transition{
+		{
 			FromState: "current_state",
 			Event:     "event",
 			ToState:   "next_state",
@@ -30,13 +30,13 @@ func TestStateMachine_DelegateInvoked(t *testing.T) {
 func TestStateMachine_FirstTransition(t *testing.T) {
 	delegate := new(mocks.Delegate)
 	transitions := []fsm.Transition{
-		fsm.Transition{
+		{
 			FromState: "current_state",
 			Event:     "event",
 			ToState:   "next_state",
 			Action:    "action",
 		},
-		fsm.Transition{
+		{
 			FromState: "current_state",
 			Event:     "event",
 			ToState:   "other_next_state",
@@ -56,7 +56,7 @@ func TestStateMachine_FirstTransition(t *testing.T) {
 func TestStateMachine_NoAction(t *testing.T) {
 	delegate := new(mocks.Delegate)
 	transitions := []fsm.Transition{
-		fsm.Transition{
+		{
 			FromState: "current_state",
 			Event:     "event",
 			ToState:   "next_state",
@@ -73,7 +73,7 @@ func TestStateMachine_NoAction(t *testing.T) {
 func TestStateMachine_Subject(t *testing.T) {
 	delegate := new(mocks.Delegate)
 	transitions := []fsm.Transition{
-		fsm.Transition{
+		{
 			FromState: "current_state",
 			Event:     "event",
 			ToState:   "next_state",
