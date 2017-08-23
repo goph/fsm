@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/goph/fsm?style=flat-square)](https://goreportcard.com/report/github.com/goph/fsm)
 [![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://godoc.org/github.com/goph/fsm)
 
-**Final state machine implementation.**
+**Finite state machine implementation.**
 
 See the [examples](examples/) directory for detailed usage examples.
 
