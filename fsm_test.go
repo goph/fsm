@@ -5,6 +5,8 @@ import (
 
 	"github.com/goph/fsm"
 	"github.com/goph/fsm/internal/mocks"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStateMachine_DelegateInvoked(t *testing.T) {
@@ -22,7 +24,9 @@ func TestStateMachine_DelegateInvoked(t *testing.T) {
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
-	sm.Trigger("current_state", "event", "argument")
+	err := sm.Trigger("current_state", "event", "argument")
+
+	require.NoError(t, err)
 
 	delegate.AssertExpectations(t)
 }
@@ -48,7 +52,9 @@ func TestStateMachine_FirstTransition(t *testing.T) {
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
-	sm.Trigger("current_state", "event", "argument")
+	err := sm.Trigger("current_state", "event", "argument")
+
+	require.NoError(t, err)
 
 	delegate.AssertExpectations(t)
 }
@@ -65,7 +71,9 @@ func TestStateMachine_NoAction(t *testing.T) {
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
-	sm.Trigger("current_state", "event", "argument")
+	err := sm.Trigger("current_state", "event", "argument")
+
+	require.NoError(t, err)
 
 	delegate.AssertNotCalled(t, "Handle", "action", "current_state", "next_state", []interface{}{"argument"})
 }
@@ -89,8 +97,36 @@ func TestStateMachine_Subject(t *testing.T) {
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
-	sm.TriggerSubject(subject, "event", "argument")
+	err := sm.TriggerSubject(subject, "event", "argument")
+
+	require.NoError(t, err)
 
 	delegate.AssertExpectations(t)
 	subject.AssertExpectations(t)
+}
+
+func TestStateMachine_InvalidTransition(t *testing.T) {
+	delegate := new(mocks.Delegate)
+	transitions := []fsm.Transition{
+		{
+			FromState: "current_state",
+			Event:     "event",
+			ToState:   "next_state",
+		},
+	}
+
+	sm := fsm.NewStateMachine(delegate, transitions)
+
+	err := sm.Trigger("other_current_state", "event", "argument")
+
+	require.Error(t, err)
+
+	ierr := err.(*fsm.InvalidTransitionError)
+
+	assert.EqualError(t, ierr, "Cannot change from state \"other_current_state\" triggered by event \"event\"")
+	assert.Equal(t, "other_current_state", ierr.CurrentState())
+	assert.Equal(t, "event", ierr.Event())
+	assert.Equal(t, []interface{}{"argument"}, ierr.Arguments())
+
+	delegate.AssertNotCalled(t, "Handle", "action", "current_state", "next_state", []interface{}{"argument"})
 }

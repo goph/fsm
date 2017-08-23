@@ -3,7 +3,7 @@
 // See the examples directory for detailed usage examples.
 package fsm
 
-import "errors"
+import "fmt"
 
 // Delegate is responsible for handling actions whenever a transition has one.
 //
@@ -30,6 +30,33 @@ type Transition struct {
 	Action    string
 }
 
+// InvalidTransitionError is returned when a transition is invalid.
+type InvalidTransitionError struct {
+	currentState string
+	event        string
+	args         []interface{}
+}
+
+// Error returns the formatted error message.
+func (e *InvalidTransitionError) Error() string {
+	return fmt.Sprintf("Cannot change from state %q triggered by event %q", e.currentState, e.event)
+}
+
+// CurrentState returns the current state.
+func (e *InvalidTransitionError) CurrentState() string {
+	return e.currentState
+}
+
+// Event returns the current state.
+func (e *InvalidTransitionError) Event() string {
+	return e.event
+}
+
+// Arguments returns the current state.
+func (e *InvalidTransitionError) Arguments() []interface{} {
+	return e.args
+}
+
 // StateMachine handles state transitions when an event is fired and calls the underlying delegate.
 type StateMachine struct {
 	delegate    Delegate
@@ -48,7 +75,11 @@ func NewStateMachine(delegate Delegate, transitions []Transition) *StateMachine 
 func (sm *StateMachine) Trigger(currentState string, event string, args ...interface{}) error {
 	t := sm.findTransition(currentState, event)
 	if t == nil {
-		return errors.New("invalid transition")
+		return &InvalidTransitionError{
+			currentState: currentState,
+			event:        event,
+			args:         args,
+		}
 	}
 
 	if t.Action != "" {
@@ -77,8 +108,8 @@ type Subject interface {
 // TriggerSubject triggers an event using the Subject's current state.
 //
 // It also passes the subject as the first argument.
-func (sm *StateMachine) TriggerSubject(subject Subject, event string, args ...interface{}) {
+func (sm *StateMachine) TriggerSubject(subject Subject, event string, args ...interface{}) error {
 	args = append([]interface{}{subject}, args...)
 
-	sm.Trigger(subject.State(), event, args...)
+	return sm.Trigger(subject.State(), event, args...)
 }
