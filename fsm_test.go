@@ -91,7 +91,7 @@ func TestStateMachine_Subject(t *testing.T) {
 
 	subject := new(mocks.Subject)
 
-	subject.On("State").Return("current_state")
+	subject.On("GetState").Return("current_state")
 
 	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{subject, "argument"}).Return()
 

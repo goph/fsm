@@ -8,8 +8,8 @@ type Subject struct {
 	mock.Mock
 }
 
-// State provides a mock function with given fields:
-func (_m *Subject) State() string {
+// GetState provides a mock function with given fields:
+func (_m *Subject) GetState() string {
 	ret := _m.Called()
 
 	var r0 string

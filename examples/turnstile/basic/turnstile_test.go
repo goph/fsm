@@ -9,8 +9,8 @@ func Example_insertACoinAndPass() {
 	t := basic.New()
 	stateMachine := turnstile.NewStateMachine()
 
-	stateMachine.Trigger(t.State(), "coin_inserted", t)
-	stateMachine.Trigger(t.State(), "pushed", t)
+	stateMachine.Trigger(t.GetState(), "coin_inserted", t)
+	stateMachine.Trigger(t.GetState(), "pushed", t)
 
 	// Output:
 	// Coin inserted, you shall pass
@@ -21,7 +21,7 @@ func Example_cannotPassWhenLocked() {
 	t := basic.New()
 	stateMachine := turnstile.NewStateMachine()
 
-	stateMachine.Trigger(t.State(), "pushed", t)
+	stateMachine.Trigger(t.GetState(), "pushed", t)
 
 	// Output:
 	// You shall not pass

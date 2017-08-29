@@ -22,8 +22,8 @@ func New() *Turnstile {
 	}
 }
 
-// State returns the current state of the turnstile.
-func (t *Turnstile) State() string {
+// GetState returns the current state of the turnstile.
+func (t *Turnstile) GetState() string {
 	return t.state
 }
 

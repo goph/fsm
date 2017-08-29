@@ -102,7 +102,7 @@ func (sm *StateMachine) findTransition(fromState string, event string) *Transiti
 
 // Subject represents a stateful structure exposing it's current state.
 type Subject interface {
-	State() string
+	GetState() string
 }
 
 // TriggerSubject triggers an event using the Subject's current state.
@@ -111,5 +111,5 @@ type Subject interface {
 func (sm *StateMachine) TriggerSubject(subject Subject, event string, args ...interface{}) error {
 	args = append([]interface{}{subject}, args...)
 
-	return sm.Trigger(subject.State(), event, args...)
+	return sm.Trigger(subject.GetState(), event, args...)
 }
