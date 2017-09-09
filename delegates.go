@@ -16,3 +16,20 @@ func (d *ActionMuxDelegate) Handle(action string, fromState string, toState stri
 		delegate.Handle(action, fromState, toState, args)
 	}
 }
+
+// CompositeDelegate allows to multiplex the single delegate in the state machine.
+type CompositeDelegate struct {
+	delegates []Delegate
+}
+
+// NewCompositeDelegate returns a new CompositeDelegate.
+func NewCompositeDelegate(delegates []Delegate) *CompositeDelegate {
+	return &CompositeDelegate{delegates}
+}
+
+// Handle calls the underlying delegates.
+func (d *CompositeDelegate) Handle(action string, fromState string, toState string, args []interface{}) {
+	for _, delegate := range d.delegates {
+		delegate.Handle(action, fromState, toState, args)
+	}
+}

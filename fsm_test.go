@@ -3,7 +3,7 @@ package fsm_test
 import (
 	"testing"
 
-	"github.com/goph/fsm"
+	. "github.com/goph/fsm"
 	"github.com/goph/fsm/internal/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -11,7 +11,7 @@ import (
 
 func TestStateMachine_DelegateInvoked(t *testing.T) {
 	delegate := new(mocks.Delegate)
-	transitions := []fsm.Transition{
+	transitions := []Transition{
 		{
 			FromState: "current_state",
 			Event:     "event",
@@ -22,7 +22,7 @@ func TestStateMachine_DelegateInvoked(t *testing.T) {
 
 	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return()
 
-	sm := fsm.NewStateMachine(delegate, transitions)
+	sm := NewStateMachine(delegate, transitions)
 
 	err := sm.Trigger("current_state", "event", "argument")
 
@@ -33,7 +33,7 @@ func TestStateMachine_DelegateInvoked(t *testing.T) {
 
 func TestStateMachine_FirstTransition(t *testing.T) {
 	delegate := new(mocks.Delegate)
-	transitions := []fsm.Transition{
+	transitions := []Transition{
 		{
 			FromState: "current_state",
 			Event:     "event",
@@ -50,7 +50,7 @@ func TestStateMachine_FirstTransition(t *testing.T) {
 
 	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return()
 
-	sm := fsm.NewStateMachine(delegate, transitions)
+	sm := NewStateMachine(delegate, transitions)
 
 	err := sm.Trigger("current_state", "event", "argument")
 
@@ -61,7 +61,7 @@ func TestStateMachine_FirstTransition(t *testing.T) {
 
 func TestStateMachine_NoAction(t *testing.T) {
 	delegate := new(mocks.Delegate)
-	transitions := []fsm.Transition{
+	transitions := []Transition{
 		{
 			FromState: "current_state",
 			Event:     "event",
@@ -69,7 +69,7 @@ func TestStateMachine_NoAction(t *testing.T) {
 		},
 	}
 
-	sm := fsm.NewStateMachine(delegate, transitions)
+	sm := NewStateMachine(delegate, transitions)
 
 	err := sm.Trigger("current_state", "event", "argument")
 
@@ -80,7 +80,7 @@ func TestStateMachine_NoAction(t *testing.T) {
 
 func TestStateMachine_Subject(t *testing.T) {
 	delegate := new(mocks.Delegate)
-	transitions := []fsm.Transition{
+	transitions := []Transition{
 		{
 			FromState: "current_state",
 			Event:     "event",
@@ -95,7 +95,7 @@ func TestStateMachine_Subject(t *testing.T) {
 
 	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{subject, "argument"}).Return()
 
-	sm := fsm.NewStateMachine(delegate, transitions)
+	sm := NewStateMachine(delegate, transitions)
 
 	err := sm.TriggerSubject(subject, "event", "argument")
 
@@ -107,7 +107,7 @@ func TestStateMachine_Subject(t *testing.T) {
 
 func TestStateMachine_InvalidTransition(t *testing.T) {
 	delegate := new(mocks.Delegate)
-	transitions := []fsm.Transition{
+	transitions := []Transition{
 		{
 			FromState: "current_state",
 			Event:     "event",
@@ -115,13 +115,13 @@ func TestStateMachine_InvalidTransition(t *testing.T) {
 		},
 	}
 
-	sm := fsm.NewStateMachine(delegate, transitions)
+	sm := NewStateMachine(delegate, transitions)
 
 	err := sm.Trigger("other_current_state", "event", "argument")
 
 	require.Error(t, err)
 
-	ierr := err.(*fsm.InvalidTransitionError)
+	ierr := err.(*InvalidTransitionError)
 
 	assert.EqualError(t, ierr, "Cannot transition from \"other_current_state\" state triggered by \"event\" event")
 	assert.Equal(t, "other_current_state", ierr.CurrentState())
