@@ -11,7 +11,7 @@ See the [examples](examples/) directory for detailed usage examples.
 
 ## Development
 
-The project requires [Glide](https://glide.sh/) to install dependencies.
+The project requires [dep](https://github.com/golang/dep) to install dependencies.
 
 ``` bash
 $ make dep
