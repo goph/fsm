@@ -17,6 +17,14 @@ func (d *ActionMuxDelegate) Handle(action string, fromState string, toState stri
 	}
 }
 
+func (d *ActionMuxDelegate) SetStateMachine(sm *StateMachine) {
+	for _, delegate := range d.delegates {
+		if smaDelegate, ok := delegate.(StateMachineAwareDelegate); ok {
+			smaDelegate.SetStateMachine(sm)
+		}
+	}
+}
+
 // CompositeDelegate allows to multiplex the single delegate in the state machine.
 type CompositeDelegate struct {
 	delegates []Delegate
@@ -31,5 +39,13 @@ func NewCompositeDelegate(delegates []Delegate) *CompositeDelegate {
 func (d *CompositeDelegate) Handle(action string, fromState string, toState string, args []interface{}) {
 	for _, delegate := range d.delegates {
 		delegate.Handle(action, fromState, toState, args)
+	}
+}
+
+func (d *CompositeDelegate) SetStateMachine(sm *StateMachine) {
+	for _, delegate := range d.delegates {
+		if smaDelegate, ok := delegate.(StateMachineAwareDelegate); ok {
+			smaDelegate.SetStateMachine(sm)
+		}
 	}
 }

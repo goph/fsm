@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- State machine aware delegate
+
 
 ## [0.3.0] - 2017-09-09
 

@@ -22,6 +22,17 @@ type Delegate interface {
 	Handle(action string, fromState string, toState string, args []interface{})
 }
 
+// StateMachineAwareDelegate plays a role when a state transition itself requires another state transition to happen.
+//
+// For example: some kind of business validation fails and a workflow needs to be terminated immediately.
+//
+// Since this kind of behaviour requires a circular dependency between the state machine and the delegate,
+// regular "constructor" injection doesn't work in this case.
+type StateMachineAwareDelegate interface {
+	// SetStateMachine sets the current state machine in the delegate
+	SetStateMachine(sm *StateMachine)
+}
+
 // Transition represents a state transition.
 type Transition struct {
 	FromState string
@@ -65,10 +76,17 @@ type StateMachine struct {
 
 // NewStateMachine returns a new StateMachine.
 func NewStateMachine(delegate Delegate, transitions []Transition) *StateMachine {
-	return &StateMachine{
-		delegate,
-		transitions,
+	stateMachine := &StateMachine{
+		transitions: transitions,
 	}
+
+	if smaDelegate, ok := delegate.(StateMachineAwareDelegate); ok {
+		smaDelegate.SetStateMachine(stateMachine)
+	}
+
+	stateMachine.delegate = delegate
+
+	return stateMachine
 }
 
 // Trigger fires an event and calls the underlying delegate.
