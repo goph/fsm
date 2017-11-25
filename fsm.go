@@ -50,7 +50,7 @@ type InvalidTransitionError struct {
 
 // Error returns the formatted error message.
 func (e *InvalidTransitionError) Error() string {
-	return fmt.Sprintf("Cannot transition from %q state triggered by %q event", e.currentState, e.event)
+	return fmt.Sprintf("cannot transition from %q state triggered by %q event", e.currentState, e.event)
 }
 
 // CurrentState returns the current state.

@@ -124,7 +124,7 @@ func TestStateMachine_InvalidTransition(t *testing.T) {
 
 	ierr := err.(*fsm.InvalidTransitionError)
 
-	assert.EqualError(t, ierr, "Cannot transition from \"other_current_state\" state triggered by \"event\" event")
+	assert.EqualError(t, ierr, "cannot transition from \"other_current_state\" state triggered by \"event\" event")
 	assert.Equal(t, "other_current_state", ierr.CurrentState())
 	assert.Equal(t, "event", ierr.Event())
 	assert.Equal(t, []interface{}{"argument"}, ierr.Arguments())
