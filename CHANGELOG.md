@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - State machine aware delegate
 
+### Changed
+
+- Make error message lowercase
+
 
 ## [0.3.0] - 2017-09-09
 
