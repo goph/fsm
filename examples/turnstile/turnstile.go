@@ -77,30 +77,36 @@ func NewStateMachine() *fsm.StateMachine {
 type coinAction struct{}
 
 // Handle unlocks the turnstile.
-func (d *coinAction) Handle(action string, fromState string, toState string, args []interface{}) {
+func (d *coinAction) Handle(action string, fromState string, toState string, args []interface{}) error {
 	if turnstile, ok := args[0].(Turnstile); ok {
 		turnstile.SetState(toState)
 
 		fmt.Println("Coin inserted, you shall pass")
 	}
+
+	return nil
 }
 
 // passAction is the delegate called when the turnstile is pushed.
 type passAction struct{}
 
 // Handle unlocks the turnstile.
-func (d *passAction) Handle(action string, fromState string, toState string, args []interface{}) {
+func (d *passAction) Handle(action string, fromState string, toState string, args []interface{}) error {
 	if turnstile, ok := args[0].(Turnstile); ok {
 		turnstile.SetState(toState)
 
 		fmt.Println("Passed the gate, coin please")
 	}
+
+	return nil
 }
 
 // noPassAction is the delegate called when the turnstile is pushed.
 type noPassAction struct{}
 
 // Handle unlocks the turnstile.
-func (d *noPassAction) Handle(action string, fromState string, toState string, args []interface{}) {
+func (d *noPassAction) Handle(action string, fromState string, toState string, args []interface{}) error {
 	fmt.Println("You shall not pass")
+
+	return nil
 }

@@ -9,7 +9,7 @@ import (
 
 func TestActionMuxDelegate(t *testing.T) {
 	delegate := new(mocks.Delegate)
-	delegate.On("Handle", "action", "fromState", "toState", []interface{}{"argument"}).Return()
+	delegate.On("Handle", "action", "fromState", "toState", []interface{}{"argument"}).Return(nil)
 
 	delegates := map[string]fsm.Delegate{
 		"action": delegate,
@@ -69,10 +69,10 @@ func TestActionMuxDelegate_SetStateMachine(t *testing.T) {
 
 func TestCompositeDelegate(t *testing.T) {
 	delegate1 := new(mocks.Delegate)
-	delegate1.On("Handle", "action", "fromState", "toState", []interface{}{"argument"}).Return()
+	delegate1.On("Handle", "action", "fromState", "toState", []interface{}{"argument"}).Return(nil)
 
 	delegate2 := new(mocks.Delegate)
-	delegate2.On("Handle", "action", "fromState", "toState", []interface{}{"argument"}).Return()
+	delegate2.On("Handle", "action", "fromState", "toState", []interface{}{"argument"}).Return(nil)
 
 	delegates := []fsm.Delegate{
 		delegate1,

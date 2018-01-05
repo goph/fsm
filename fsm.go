@@ -19,7 +19,7 @@ type Delegate interface {
 	// Erroneous cases are recommended to be logged.
 	//
 	// Note: this might change in the future.
-	Handle(action string, fromState string, toState string, args []interface{})
+	Handle(action string, fromState string, toState string, args []interface{}) error
 }
 
 // StateMachineAwareDelegate plays a role when a state transition itself requires another state transition to happen.

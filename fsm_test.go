@@ -21,7 +21,7 @@ func TestStateMachine_DelegateInvoked(t *testing.T) {
 		},
 	}
 
-	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return()
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return(nil)
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
@@ -49,7 +49,7 @@ func TestStateMachine_FirstTransition(t *testing.T) {
 		},
 	}
 
-	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return()
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return(nil)
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
@@ -94,7 +94,7 @@ func TestStateMachine_Subject(t *testing.T) {
 
 	subject.On("GetState").Return("current_state")
 
-	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{subject, "argument"}).Return()
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{subject, "argument"}).Return(nil)
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
