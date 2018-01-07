@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"errors"
 )
 
 func TestStateMachine_DelegateInvoked(t *testing.T) {
@@ -159,4 +160,35 @@ func TestStateMachine_StateMachineAwareDelegate(t *testing.T) {
 	sm := fsm.NewStateMachine(delegate1, transitions)
 
 	smaDelegate.AssertCalled(t, "SetStateMachine", sm)
+}
+
+func TestStateMachine_DelegateError(t *testing.T) {
+	delegate := new(mocks.Delegate)
+	transitions := []fsm.Transition{
+		{
+			FromState: "current_state",
+			Event:     "event",
+			ToState:   "next_state",
+			Action:    "action",
+		},
+	}
+
+	delegate.
+		On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).
+		Return(errors.New("error happened"))
+
+	sm := fsm.NewStateMachine(delegate, transitions)
+
+	err := sm.Trigger("current_state", "event", "argument")
+
+	require.Error(t, err)
+
+	derr := err.(*fsm.DelegateError)
+
+	assert.EqualError(t, derr, "delegate reported an error during transition from \"current_state\" state triggered by \"event\" event: error happened")
+	assert.Equal(t, "current_state", derr.CurrentState())
+	assert.Equal(t, "event", derr.Event())
+	assert.Equal(t, []interface{}{"argument"}, derr.Arguments())
+
+	delegate.AssertExpectations(t)
 }

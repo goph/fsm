@@ -68,6 +68,43 @@ func (e *InvalidTransitionError) Arguments() []interface{} {
 	return e.args
 }
 
+type DelegateError struct {
+	err          error
+	currentState string
+	event        string
+	args         []interface{}
+}
+
+// Cause implements the causer interface from github.com/pkg/errors.
+func (e *DelegateError) Cause() error {
+	return e.err
+}
+
+// Error returns the formatted error message.
+func (e *DelegateError) Error() string {
+	return fmt.Sprintf(
+		"delegate reported an error during transition from %q state triggered by %q event: %s",
+		e.currentState,
+		e.event,
+		e.err.Error(),
+	)
+}
+
+// CurrentState returns the current state.
+func (e *DelegateError) CurrentState() string {
+	return e.currentState
+}
+
+// Event returns the current state.
+func (e *DelegateError) Event() string {
+	return e.event
+}
+
+// Arguments returns the current state.
+func (e *DelegateError) Arguments() []interface{} {
+	return e.args
+}
+
 // StateMachine handles state transitions when an event is fired and calls the underlying delegate.
 type StateMachine struct {
 	delegate    Delegate
@@ -101,7 +138,15 @@ func (sm *StateMachine) Trigger(currentState string, event string, args ...inter
 	}
 
 	if t.Action != "" {
-		sm.delegate.Handle(t.Action, t.FromState, t.ToState, args)
+		err := sm.delegate.Handle(t.Action, t.FromState, t.ToState, args)
+		if err != nil {
+			return &DelegateError{
+				err:          err,
+				currentState: currentState,
+				event:        event,
+				args:         args,
+			}
+		}
 	}
 
 	return nil
