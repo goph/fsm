@@ -186,6 +186,7 @@ func TestStateMachine_DelegateError(t *testing.T) {
 	derr := err.(*fsm.DelegateError)
 
 	assert.EqualError(t, derr, "delegate reported an error during transition from \"current_state\" state triggered by \"event\" event: error happened")
+	assert.Equal(t, "next_state", derr.NextState())
 	assert.Equal(t, "current_state", derr.CurrentState())
 	assert.Equal(t, "event", derr.Event())
 	assert.Equal(t, []interface{}{"argument"}, derr.Arguments())

@@ -70,6 +70,7 @@ func (e *InvalidTransitionError) Arguments() []interface{} {
 
 type DelegateError struct {
 	err          error
+	nextState    string
 	currentState string
 	event        string
 	args         []interface{}
@@ -88,6 +89,11 @@ func (e *DelegateError) Error() string {
 		e.event,
 		e.err.Error(),
 	)
+}
+
+// NextState returns the next state.
+func (e *DelegateError) NextState() string {
+	return e.nextState
 }
 
 // CurrentState returns the current state.
@@ -142,6 +148,7 @@ func (sm *StateMachine) Trigger(currentState string, event string, args ...inter
 		if err != nil {
 			return &DelegateError{
 				err:          err,
+				nextState:    t.ToState,
 				currentState: currentState,
 				event:        event,
 				args:         args,
