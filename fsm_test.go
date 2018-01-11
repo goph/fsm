@@ -173,9 +173,11 @@ func TestStateMachine_DelegateError(t *testing.T) {
 		},
 	}
 
+	delegateErr := errors.New("error happened")
+
 	delegate.
 		On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).
-		Return(errors.New("error happened"))
+		Return(delegateErr)
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
@@ -186,6 +188,7 @@ func TestStateMachine_DelegateError(t *testing.T) {
 	derr := err.(*fsm.DelegateError)
 
 	assert.EqualError(t, derr, "delegate reported an error during transition from \"current_state\" state triggered by \"event\" event: error happened")
+	assert.Equal(t, delegateErr, derr.Cause())
 	assert.Equal(t, "next_state", derr.NextState())
 	assert.Equal(t, "current_state", derr.CurrentState())
 	assert.Equal(t, "event", derr.Event())
