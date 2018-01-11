@@ -3,12 +3,13 @@ package fsm_test
 import (
 	"testing"
 
+	"errors"
+
 	"github.com/goph/fsm"
 	"github.com/goph/fsm/internal/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"errors"
 )
 
 func TestStateMachine_DelegateInvoked(t *testing.T) {

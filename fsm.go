@@ -4,8 +4,8 @@
 package fsm
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 )
 
 // Delegate is responsible for handling actions whenever a transition has one.
