@@ -41,39 +41,44 @@ type Transition struct {
 	Action    string
 }
 
-// InvalidTransitionError is returned when a transition is invalid.
-type InvalidTransitionError struct {
+// transitionError represents an error which occurs during a state transition, regardless whether the transitions was successful or not.
+type transitionError struct {
 	currentState string
 	event        string
 	args         []interface{}
 }
 
-// Error returns the formatted error message.
-func (e *InvalidTransitionError) Error() string {
-	return fmt.Sprintf("cannot transition from %q state triggered by %q event", e.currentState, e.event)
-}
-
 // CurrentState returns the current state.
-func (e *InvalidTransitionError) CurrentState() string {
+func (e *transitionError) CurrentState() string {
 	return e.currentState
 }
 
 // Event returns the current state.
-func (e *InvalidTransitionError) Event() string {
+func (e *transitionError) Event() string {
 	return e.event
 }
 
 // Arguments returns the current state.
-func (e *InvalidTransitionError) Arguments() []interface{} {
+func (e *transitionError) Arguments() []interface{} {
 	return e.args
 }
 
+// Error returns the formatted error message.
+func (e *transitionError) Error() string {
+	return fmt.Sprintf("cannot transition from %q state triggered by %q event", e.currentState, e.event)
+}
+
+// InvalidTransitionError is returned when a transition is invalid.
+type InvalidTransitionError struct {
+	*transitionError
+}
+
+// DelegateError wraps an error returned by a delegate.
 type DelegateError struct {
-	err          error
-	nextState    string
-	currentState string
-	event        string
-	args         []interface{}
+	*transitionError
+
+	err       error
+	nextState string
 }
 
 // Cause implements the causer interface from github.com/pkg/errors.
@@ -94,21 +99,6 @@ func (e *DelegateError) Error() string {
 // NextState returns the next state.
 func (e *DelegateError) NextState() string {
 	return e.nextState
-}
-
-// CurrentState returns the current state.
-func (e *DelegateError) CurrentState() string {
-	return e.currentState
-}
-
-// Event returns the current state.
-func (e *DelegateError) Event() string {
-	return e.event
-}
-
-// Arguments returns the current state.
-func (e *DelegateError) Arguments() []interface{} {
-	return e.args
 }
 
 // StateMachine handles state transitions when an event is fired and calls the underlying delegate.
@@ -137,9 +127,11 @@ func (sm *StateMachine) Trigger(currentState string, event string, args ...inter
 	t := sm.findTransition(currentState, event)
 	if t == nil {
 		return &InvalidTransitionError{
-			currentState: currentState,
-			event:        event,
-			args:         args,
+			&transitionError{
+				currentState: currentState,
+				event:        event,
+				args:         args,
+			},
 		}
 	}
 
@@ -147,11 +139,14 @@ func (sm *StateMachine) Trigger(currentState string, event string, args ...inter
 		err := sm.delegate.Handle(t.Action, t.FromState, t.ToState, args)
 		if err != nil {
 			return &DelegateError{
-				err:          err,
-				nextState:    t.ToState,
-				currentState: currentState,
-				event:        event,
-				args:         args,
+				transitionError: &transitionError{
+					currentState: currentState,
+					event:        event,
+					args:         args,
+				},
+
+				err:       err,
+				nextState: t.ToState,
 			}
 		}
 	}
