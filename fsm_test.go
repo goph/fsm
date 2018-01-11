@@ -190,6 +190,7 @@ func TestStateMachine_DelegateError(t *testing.T) {
 	assert.EqualError(t, derr, "delegate reported an error during transition from \"current_state\" state triggered by \"event\" event: error happened")
 	assert.Equal(t, delegateErr, derr.Cause())
 	assert.Equal(t, "next_state", derr.NextState())
+	assert.Equal(t, "action", derr.Action())
 	assert.Equal(t, "current_state", derr.CurrentState())
 	assert.Equal(t, "event", derr.Event())
 	assert.Equal(t, []interface{}{"argument"}, derr.Arguments())

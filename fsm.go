@@ -79,6 +79,7 @@ type DelegateError struct {
 
 	err       error
 	nextState string
+	action    string
 }
 
 // Cause implements the causer interface from github.com/pkg/errors.
@@ -99,6 +100,11 @@ func (e *DelegateError) Error() string {
 // NextState returns the next state.
 func (e *DelegateError) NextState() string {
 	return e.nextState
+}
+
+// Action returns the executed action.
+func (e *DelegateError) Action() string {
+	return e.action
 }
 
 // StateMachine handles state transitions when an event is fired and calls the underlying delegate.
@@ -147,6 +153,7 @@ func (sm *StateMachine) Trigger(currentState string, event string, args ...inter
 
 				err:       err,
 				nextState: t.ToState,
+				action:    t.Action,
 			}
 		}
 	}
