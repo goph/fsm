@@ -197,3 +197,25 @@ func TestStateMachine_DelegateError(t *testing.T) {
 
 	delegate.AssertExpectations(t)
 }
+
+func TestStateMachine_StopPropagation(t *testing.T) {
+	delegate := new(mocks.Delegate)
+	transitions := []fsm.Transition{
+		{
+			FromState: "current_state",
+			Event:     "event",
+			ToState:   "next_state",
+			Action:    "action",
+		},
+	}
+
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return(fsm.StopPropagation)
+
+	sm := fsm.NewStateMachine(delegate, transitions)
+
+	err := sm.Trigger("current_state", "event", "argument")
+
+	require.NoError(t, err)
+
+	delegate.AssertExpectations(t)
+}

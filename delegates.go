@@ -40,7 +40,12 @@ func NewCompositeDelegate(delegates []Delegate) *CompositeDelegate {
 // Handle calls the underlying delegates.
 func (d *CompositeDelegate) Handle(action string, fromState string, toState string, args []interface{}) error {
 	for _, delegate := range d.delegates {
-		delegate.Handle(action, fromState, toState, args)
+		// TODO: consider collecting and returning errors
+		err := delegate.Handle(action, fromState, toState, args)
+		if err == StopPropagation {
+			// Error must be returned so that embedded composite delegates pass up the signal
+			return err
+		}
 	}
 
 	return nil

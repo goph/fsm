@@ -5,6 +5,7 @@ import (
 
 	"github.com/goph/fsm"
 	"github.com/goph/fsm/internal/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestActionMuxDelegate(t *testing.T) {
@@ -116,4 +117,25 @@ func TestCompositeDelegate_SetStateMachine(t *testing.T) {
 	cd.SetStateMachine(sm)
 
 	smaDelegate.AssertExpectations(t)
+}
+
+func TestCompositeDelegate_StopPropagation(t *testing.T) {
+	delegate1 := new(mocks.Delegate)
+	delegate1.On("Handle", "action", "fromState", "toState", []interface{}{"argument"}).Return(fsm.StopPropagation)
+
+	delegate2 := new(mocks.Delegate)
+
+	delegates := []fsm.Delegate{
+		delegate1,
+		delegate2,
+	}
+
+	cd := fsm.NewCompositeDelegate(delegates)
+
+	err := cd.Handle("action", "fromState", "toState", []interface{}{"argument"})
+
+	assert.Equal(t, fsm.StopPropagation, err)
+
+	delegate1.AssertExpectations(t)
+	delegate2.AssertNotCalled(t, "Handle", "action", "fromState", "toState", []interface{}{"argument"})
 }

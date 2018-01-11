@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- `StopPropagation` to stop propagation in composite delegates
+
 ### Changed
 
 - **API break** - `Handle` returns an error

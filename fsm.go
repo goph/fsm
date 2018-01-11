@@ -3,7 +3,10 @@
 // See the examples directory for detailed usage examples.
 package fsm
 
-import "fmt"
+import (
+	"fmt"
+	"errors"
+)
 
 // Delegate is responsible for handling actions whenever a transition has one.
 //
@@ -107,6 +110,9 @@ func (e *DelegateError) Action() string {
 	return e.action
 }
 
+// StopPropagation can be returned by delegates to indicate that any further delegates should not be executed.
+var StopPropagation = errors.New("stop propagation")
+
 // StateMachine handles state transitions when an event is fired and calls the underlying delegate.
 type StateMachine struct {
 	delegate    Delegate
@@ -144,6 +150,10 @@ func (sm *StateMachine) Trigger(currentState string, event string, args ...inter
 	if t.Action != "" {
 		err := sm.delegate.Handle(t.Action, t.FromState, t.ToState, args)
 		if err != nil {
+			if err == StopPropagation {
+				return nil
+			}
+
 			return &DelegateError{
 				transitionError: &transitionError{
 					currentState: currentState,
