@@ -3,6 +3,8 @@ package fsm_test
 import (
 	"testing"
 
+	"errors"
+
 	"github.com/goph/fsm"
 	"github.com/goph/fsm/internal/mocks"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +23,7 @@ func TestStateMachine_DelegateInvoked(t *testing.T) {
 		},
 	}
 
-	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return()
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return(nil)
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
@@ -49,7 +51,7 @@ func TestStateMachine_FirstTransition(t *testing.T) {
 		},
 	}
 
-	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return()
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return(nil)
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
@@ -94,7 +96,7 @@ func TestStateMachine_Subject(t *testing.T) {
 
 	subject.On("GetState").Return("current_state")
 
-	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{subject, "argument"}).Return()
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{subject, "argument"}).Return(nil)
 
 	sm := fsm.NewStateMachine(delegate, transitions)
 
@@ -159,4 +161,62 @@ func TestStateMachine_StateMachineAwareDelegate(t *testing.T) {
 	sm := fsm.NewStateMachine(delegate1, transitions)
 
 	smaDelegate.AssertCalled(t, "SetStateMachine", sm)
+}
+
+func TestStateMachine_DelegateError(t *testing.T) {
+	delegate := new(mocks.Delegate)
+	transitions := []fsm.Transition{
+		{
+			FromState: "current_state",
+			Event:     "event",
+			ToState:   "next_state",
+			Action:    "action",
+		},
+	}
+
+	delegateErr := errors.New("error happened")
+
+	delegate.
+		On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).
+		Return(delegateErr)
+
+	sm := fsm.NewStateMachine(delegate, transitions)
+
+	err := sm.Trigger("current_state", "event", "argument")
+
+	require.Error(t, err)
+
+	derr := err.(*fsm.DelegateError)
+
+	assert.EqualError(t, derr, "delegate reported an error during transition from \"current_state\" state triggered by \"event\" event: error happened")
+	assert.Equal(t, delegateErr, derr.Cause())
+	assert.Equal(t, "next_state", derr.NextState())
+	assert.Equal(t, "action", derr.Action())
+	assert.Equal(t, "current_state", derr.CurrentState())
+	assert.Equal(t, "event", derr.Event())
+	assert.Equal(t, []interface{}{"argument"}, derr.Arguments())
+
+	delegate.AssertExpectations(t)
+}
+
+func TestStateMachine_StopPropagation(t *testing.T) {
+	delegate := new(mocks.Delegate)
+	transitions := []fsm.Transition{
+		{
+			FromState: "current_state",
+			Event:     "event",
+			ToState:   "next_state",
+			Action:    "action",
+		},
+	}
+
+	delegate.On("Handle", "action", "current_state", "next_state", []interface{}{"argument"}).Return(fsm.StopPropagation)
+
+	sm := fsm.NewStateMachine(delegate, transitions)
+
+	err := sm.Trigger("current_state", "event", "argument")
+
+	require.NoError(t, err)
+
+	delegate.AssertExpectations(t)
 }

@@ -3,7 +3,10 @@
 // See the examples directory for detailed usage examples.
 package fsm
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Delegate is responsible for handling actions whenever a transition has one.
 //
@@ -19,7 +22,7 @@ type Delegate interface {
 	// Erroneous cases are recommended to be logged.
 	//
 	// Note: this might change in the future.
-	Handle(action string, fromState string, toState string, args []interface{})
+	Handle(action string, fromState string, toState string, args []interface{}) error
 }
 
 // StateMachineAwareDelegate plays a role when a state transition itself requires another state transition to happen.
@@ -41,32 +44,74 @@ type Transition struct {
 	Action    string
 }
 
-// InvalidTransitionError is returned when a transition is invalid.
-type InvalidTransitionError struct {
+// transitionError represents an error which occurs during a state transition, regardless whether the transitions was successful or not.
+type transitionError struct {
 	currentState string
 	event        string
 	args         []interface{}
 }
 
-// Error returns the formatted error message.
-func (e *InvalidTransitionError) Error() string {
-	return fmt.Sprintf("cannot transition from %q state triggered by %q event", e.currentState, e.event)
-}
-
 // CurrentState returns the current state.
-func (e *InvalidTransitionError) CurrentState() string {
+func (e *transitionError) CurrentState() string {
 	return e.currentState
 }
 
 // Event returns the current state.
-func (e *InvalidTransitionError) Event() string {
+func (e *transitionError) Event() string {
 	return e.event
 }
 
 // Arguments returns the current state.
-func (e *InvalidTransitionError) Arguments() []interface{} {
+func (e *transitionError) Arguments() []interface{} {
 	return e.args
 }
+
+// Error returns the formatted error message.
+func (e *transitionError) Error() string {
+	return fmt.Sprintf("cannot transition from %q state triggered by %q event", e.currentState, e.event)
+}
+
+// InvalidTransitionError is returned when a transition is invalid.
+type InvalidTransitionError struct {
+	*transitionError
+}
+
+// DelegateError wraps an error returned by a delegate.
+type DelegateError struct {
+	*transitionError
+
+	err       error
+	nextState string
+	action    string
+}
+
+// Cause implements the causer interface from github.com/pkg/errors.
+func (e *DelegateError) Cause() error {
+	return e.err
+}
+
+// Error returns the formatted error message.
+func (e *DelegateError) Error() string {
+	return fmt.Sprintf(
+		"delegate reported an error during transition from %q state triggered by %q event: %s",
+		e.currentState,
+		e.event,
+		e.err.Error(),
+	)
+}
+
+// NextState returns the next state.
+func (e *DelegateError) NextState() string {
+	return e.nextState
+}
+
+// Action returns the executed action.
+func (e *DelegateError) Action() string {
+	return e.action
+}
+
+// StopPropagation can be returned by delegates to indicate that any further delegates should not be executed.
+var StopPropagation = errors.New("stop propagation")
 
 // StateMachine handles state transitions when an event is fired and calls the underlying delegate.
 type StateMachine struct {
@@ -94,14 +139,33 @@ func (sm *StateMachine) Trigger(currentState string, event string, args ...inter
 	t := sm.findTransition(currentState, event)
 	if t == nil {
 		return &InvalidTransitionError{
-			currentState: currentState,
-			event:        event,
-			args:         args,
+			&transitionError{
+				currentState: currentState,
+				event:        event,
+				args:         args,
+			},
 		}
 	}
 
 	if t.Action != "" {
-		sm.delegate.Handle(t.Action, t.FromState, t.ToState, args)
+		err := sm.delegate.Handle(t.Action, t.FromState, t.ToState, args)
+		if err != nil {
+			if err == StopPropagation {
+				return nil
+			}
+
+			return &DelegateError{
+				transitionError: &transitionError{
+					currentState: currentState,
+					event:        event,
+					args:         args,
+				},
+
+				err:       err,
+				nextState: t.ToState,
+				action:    t.Action,
+			}
+		}
 	}
 
 	return nil

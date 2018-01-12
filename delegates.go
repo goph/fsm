@@ -11,10 +11,12 @@ func NewActionMuxDelegate(delegates map[string]Delegate) *ActionMuxDelegate {
 }
 
 // Handle calls the underlying delegate for an action if any.
-func (d *ActionMuxDelegate) Handle(action string, fromState string, toState string, args []interface{}) {
+func (d *ActionMuxDelegate) Handle(action string, fromState string, toState string, args []interface{}) error {
 	if delegate, ok := d.delegates[action]; ok {
-		delegate.Handle(action, fromState, toState, args)
+		return delegate.Handle(action, fromState, toState, args)
 	}
+
+	return nil
 }
 
 func (d *ActionMuxDelegate) SetStateMachine(sm *StateMachine) {
@@ -36,10 +38,17 @@ func NewCompositeDelegate(delegates []Delegate) *CompositeDelegate {
 }
 
 // Handle calls the underlying delegates.
-func (d *CompositeDelegate) Handle(action string, fromState string, toState string, args []interface{}) {
+func (d *CompositeDelegate) Handle(action string, fromState string, toState string, args []interface{}) error {
 	for _, delegate := range d.delegates {
-		delegate.Handle(action, fromState, toState, args)
+		// TODO: consider collecting and returning errors
+		err := delegate.Handle(action, fromState, toState, args)
+		if err == StopPropagation {
+			// Error must be returned so that embedded composite delegates pass up the signal
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (d *CompositeDelegate) SetStateMachine(sm *StateMachine) {
